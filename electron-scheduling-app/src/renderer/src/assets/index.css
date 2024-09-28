@@ -3,16 +3,24 @@
 @tailwind utilities;
 
 @layer base {
-    #root {
-        @apply h-full;
-    }
+  #root {
+    @apply h-full;
+  }
 
-    html,
-    body {
-        @apply h-full;
-        @apply select-none;
-        @apply bg-transparent;
-        @apply font-mono antialiased text-white;
-        @apply overflow-hidden;
-    }
+  html,
+  body {
+    @apply h-full;
+    @apply select-none;
+    @apply bg-transparent;
+    @apply font-mono antialiased text-white;
+    @apply overflow-hidden;
+  }
+
+  header {
+    -webkit-app-region: drag;
+  }
+
+  button {
+    -webkit-app-region: no-drag;
+  }
 }
