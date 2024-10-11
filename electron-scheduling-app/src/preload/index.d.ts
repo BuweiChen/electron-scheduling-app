@@ -6,5 +6,8 @@ declare global {
     context: {
       locale: string
     }
+    electronAPI: {
+      sendText(inputText: string): unknown
+    }
   }
 }

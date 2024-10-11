@@ -1,4 +1,4 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 if (!process.contextIsolated) {
@@ -8,6 +8,9 @@ if (!process.contextIsolated) {
 try {
   contextBridge.exposeInMainWorld('context', {
     locale: navigator.language
+  })
+  contextBridge.exposeInMainWorld('electronAPI', {
+    sendText: (input: string) => ipcRenderer.invoke('process-text', input)
   })
 } catch (error) {
   console.log(error)

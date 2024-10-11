@@ -1,6 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import fetchLLMResponse from './lib/lib'
 import icon from '../../resources/icon.png?asset'
 
 function createWindow(): void {
@@ -61,6 +62,13 @@ app.whenReady().then(() => {
   ipcMain.on('ping', () => console.log('pong'))
 
   createWindow()
+
+  ipcMain.handle('process-text', async (event, input: string) => {
+    // Here you will integrate the LLM API (e.g., GPT, etc.)
+    // Example: Send the input to your LLM endpoint and return the JSON response
+    const jsonResponse = await fetchLLMResponse(input) // Stub function
+    return jsonResponse
+  })
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
