@@ -1,4 +1,4 @@
-async function fetchLLMResponse(input: string) {
+async function fetchLLMResponse(input: string, apiUrl: string) {
   const requestBody = {
     model: 'lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF',
     messages: [
