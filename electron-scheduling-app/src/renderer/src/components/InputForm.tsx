@@ -13,7 +13,7 @@ export const InputForm: React.FC = () => {
     e.preventDefault()
     setLoading(true)
     try {
-      const response = await window.electronAPI.sendText(inputText)
+      const response = await window.electronAPI.sendText(inputText, jsonOutput)
       setJsonOutput(JSON.stringify(response, null, 2)) // Store formatted JSON string
     } catch (error) {
       console.error('Error processing text:', error)

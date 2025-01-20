@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 
-async function fetchLLMResponse(input: string, apiUrl: string) {
+async function fetchLLMResponse(input: string, apiUrl: string, oldJSON: string | null) {
   // Read the schema from schema.txt
   let schemaContent: string
   try {
@@ -16,6 +16,9 @@ async function fetchLLMResponse(input: string, apiUrl: string) {
   // System prompt with schema dynamically included
   const systemPrompt = `
     You are an AI that generates SAT-style constraints in a JSON format based on the user's natural language description.
+    If an existing json is provided, modify it based on the user's input.
+    Old JSON:
+    ${oldJSON || 'None'}
     Use the following schema as a guide for your JSON responses:
     ${schemaContent}
     Strictly following the schema. Infer unfilled fields. Output must be valid JSON. Output only the JSON and nothing else.

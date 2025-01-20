@@ -129,10 +129,10 @@ app.whenReady().then(() => {
   run().catch(console.dir)
   const LLM_API_URL = process.env.LLM_API_URL || 'http://localhost:1234/v1/chat/completions'
 
-  ipcMain.handle('process-text', async (event, input: string) => {
+  ipcMain.handle('process-text', async (event, input: string, oldJSON: string | null) => {
     // Here you will integrate the LLM API (e.g., GPT, etc.)
     // Example: Send the input to your LLM endpoint and return the JSON response
-    const jsonResponse = await fetchLLMResponse(input, LLM_API_URL) // Stub function
+    const jsonResponse = await fetchLLMResponse(input, LLM_API_URL, oldJSON) // Stub function
     return jsonResponse
   })
 

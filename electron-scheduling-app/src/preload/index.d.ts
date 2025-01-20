@@ -7,7 +7,7 @@ declare global {
       locale: string
     }
     electronAPI: {
-      sendText(inputText: string): unknown
+      sendText(inputText: string, oldJSON: string|null): unknown
     }
   }
 }
