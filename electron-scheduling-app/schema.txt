@@ -10,6 +10,7 @@
     {
       "name": "string",  // Name of the person
       "id": "integer"    // Unique identifier for the person
+      "timeslots_available": ["string"] // Array of timeslot IDs available for meeting
     }
   ],
   "meetings": [
@@ -18,11 +19,9 @@
       "participants": ["integer"],         // List of person IDs attending the meeting
       "room": "string",                    // Name of the room where the meeting is held
       "timeslot": "string",                // Timeslot ID during which the meeting is scheduled
-      "agenda": "string (optional)"
     }
   ],
   "timeslots": {
     "t1": "string",  // Human-readable time range (e.g., "8:00am - 9:00am")
-    "t2": "string"   // Another time range
   }
 }

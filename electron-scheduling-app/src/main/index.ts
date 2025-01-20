@@ -19,25 +19,14 @@ const client = new MongoClient(uri, {
   }
 })
 
-async function storeJsonToDb(): Promise<void> {
+async function storeJsonToDb(json: object): Promise<void> {
   try {
-    // Connect to the database
-    // await client.connect()
-
     // Reference the database and collection
     const database = client.db('db1')
     const collection = database.collection('collection1') // Replace 'myCollection' with your collection name
 
-    // Define the JSON object to store
-    const myJson = {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      age: 30,
-      hobbies: ['reading', 'traveling', 'coding']
-    }
-
     // Insert the JSON object into the collection
-    const result = await collection.insertOne(myJson)
+    const result = await collection.insertOne(json)
 
     console.log(`JSON inserted with _id: ${result.insertedId}`)
   } catch (error) {
@@ -48,10 +37,26 @@ async function storeJsonToDb(): Promise<void> {
   }
 }
 
+async function resetCollection(): Promise<void> {
+  try {
+    // Reference the database and collection
+    const database = client.db('db1')
+    const collection = database.collection('collection1')
+
+    // Delete all documents in the collection
+    const result = await collection.deleteMany({})
+
+    console.log(`Deleted ${result.deletedCount} documents from the collection`)
+  } catch (error) {
+    console.error('Error resetting collection:', error)
+  } finally {
+    // Close the database connection
+    await client.close()
+  }
+}
+
 async function run() {
   try {
-    // Connect the client to the server (optional starting in v4.7)
-    await client.connect()
     // Send a ping to confirm a successful connection
     await client.db('admin').command({ ping: 1 })
     console.log('Pinged your deployment. You successfully connected to MongoDB!')
@@ -122,8 +127,6 @@ app.whenReady().then(() => {
 
   createWindow()
   run().catch(console.dir)
-  storeJsonToDb().catch(console.error)
-
   const LLM_API_URL = process.env.LLM_API_URL || 'http://localhost:1234/v1/chat/completions'
 
   ipcMain.handle('process-text', async (event, input: string) => {
