@@ -19,13 +19,13 @@ const client = new MongoClient(uri, {
   }
 })
 
-async function fetchLastJsonFromDb(): Promise<string | null> {
+async function fetchLastJsonFromDb(): Promise<object | null> {
   try {
     await client.connect()
     const database = client.db('db1')
     const collection = database.collection('collection1')
-    const result = await collection.findOne({})
-    return result ? JSON.stringify(result) : null
+    const result = await collection.findOne({}, { projection: { _id: 0 } })
+    return result
   } catch (error) {
     console.error('Error fetching JSON from DB:', error)
     return null
