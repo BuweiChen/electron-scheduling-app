@@ -1,80 +1,65 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { MongoClient, ServerApiVersion } from 'mongodb'
 import fetchLLMResponse from './lib/lib'
 import icon from '../../resources/icon.png?asset'
-import mysql from 'mysql2/promise'
 import * as dotenv from 'dotenv'
 dotenv.config()
-console.log('Loaded environment variables:', {
-  dbHost: process.env.DB_HOST,
-  llmApiUrl: process.env.LLM_API_URL
+
+const db_password = process.env.DB_PASSWORD
+const uri = `mongodb+srv://buweichen:${db_password}@cluster0.iwhnd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
+console.log(uri)
+
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true
+  }
 })
 
-const dbConfig = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306
-}
-
-const connectToDatabase = async () => {
+async function storeJsonToDb(): Promise<void> {
   try {
-    const connection = await mysql.createConnection(dbConfig)
-    console.log('Connected to the MySQL database')
-    return connection
+    // Connect to the database
+    // await client.connect()
+
+    // Reference the database and collection
+    const database = client.db('db1')
+    const collection = database.collection('collection1') // Replace 'myCollection' with your collection name
+
+    // Define the JSON object to store
+    const myJson = {
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      age: 30,
+      hobbies: ['reading', 'traveling', 'coding']
+    }
+
+    // Insert the JSON object into the collection
+    const result = await collection.insertOne(myJson)
+
+    console.log(`JSON inserted with _id: ${result.insertedId}`)
   } catch (error) {
-    console.error('Error connecting to the database:', error)
-    throw error
+    console.error('Error storing JSON to DB:', error)
+  } finally {
+    // Close the database connection
+    await client.close()
   }
 }
 
-const fetchAllPersons = async () => {
-  const connection = await connectToDatabase()
-
+async function run() {
   try {
-    const [rows] = await connection.execute('SELECT * FROM Persons')
-    console.log('Fetched rows:', rows)
-    return rows
+    // Connect the client to the server (optional starting in v4.7)
+    await client.connect()
+    // Send a ping to confirm a successful connection
+    await client.db('admin').command({ ping: 1 })
+    console.log('Pinged your deployment. You successfully connected to MongoDB!')
   } catch (error) {
-    console.error('Error fetching rows:', error)
-    throw error
+    console.error('An error occurred while connecting to MongoDB:', error)
   } finally {
-    await connection.end()
-  }
-}
-
-const addPerson = async (name: string) => {
-  const connection = await connectToDatabase()
-
-  try {
-    const [result] = await connection.execute<mysql.ResultSetHeader>(
-      'INSERT INTO Persons (name) VALUES (?)',
-      [name]
-    )
-    console.log('Inserted person with ID:', result.insertId)
-    return result.insertId
-  } catch (error) {
-    console.error('Error inserting data:', error)
-    throw error
-  } finally {
-    await connection.end()
-  }
-}
-
-// Clear all data in the database
-const clearDatabase = async () => {
-  const connection = await connectToDatabase()
-
-  try {
-    await connection.execute('DELETE FROM Persons')
-    console.log('All data cleared from the Persons table')
-  } catch (error) {
-    console.error('Error clearing data:', error)
-    throw error
-  } finally {
-    await connection.end()
+    // Ensures that the client will close when you finish/error
+    await client.close()
   }
 }
 
@@ -136,9 +121,8 @@ app.whenReady().then(() => {
   ipcMain.on('ping', () => console.log('pong'))
 
   createWindow()
-  // addPerson('Alice')
-  fetchAllPersons()
-  clearDatabase()
+  run().catch(console.dir)
+  storeJsonToDb().catch(console.error)
 
   const LLM_API_URL = process.env.LLM_API_URL || 'http://localhost:1234/v1/chat/completions'
 
