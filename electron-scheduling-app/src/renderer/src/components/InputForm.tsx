@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
-import { json } from 'stream/consumers'
 
 export const InputForm: React.FC = () => {
   const [inputText, setInputText] = useState('')
   const [jsonOutput, setJsonOutput] = useState<string | null>(null) // Keep JSON as a string for editing
   const [loading, setLoading] = useState(false)
-  const [dbLoading, setDbLoading] = useState(false) // For save/reset button loading states
+  const [dbLoading, setDbLoading] = useState(false) // For database operations
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value)
@@ -15,7 +14,6 @@ export const InputForm: React.FC = () => {
     e.preventDefault()
     setLoading(true)
     try {
-      console.log(jsonOutput)
       const response = await window.electronAPI.sendText(inputText, jsonOutput)
       setJsonOutput(JSON.stringify(response, null, 2)) // Store formatted JSON string
     } catch (error) {
@@ -36,8 +34,8 @@ export const InputForm: React.FC = () => {
     }
     setDbLoading(true)
     try {
-      await window.electronAPI.resetDB()
-      await window.electronAPI.saveDB(jsonOutput)
+      await window.electronAPI.resetDB() // Clear the collection
+      await window.electronAPI.saveDB(jsonOutput) // Save new JSON
       alert('JSON saved to MongoDB!')
     } catch (error) {
       console.error('Error saving to MongoDB:', error)
@@ -56,6 +54,23 @@ export const InputForm: React.FC = () => {
       console.error('Error resetting MongoDB:', error)
     } finally {
       setJsonOutput(null)
+      setDbLoading(false)
+    }
+  }
+
+  const handleLoad = async () => {
+    setDbLoading(true)
+    try {
+      const data = await window.electronAPI.fetchDB() // Assuming fetchDB is implemented
+      if (data) {
+        setJsonOutput(JSON.stringify(data, null, 2)) // Format JSON for readability
+        alert('Data loaded from MongoDB!')
+      } else {
+        alert('No data found in MongoDB.')
+      }
+    } catch (error) {
+      console.error('Error fetching data from MongoDB:', error)
+    } finally {
       setDbLoading(false)
     }
   }
@@ -97,7 +112,7 @@ export const InputForm: React.FC = () => {
           placeholder="JSON output will appear here..."
         ></textarea>
 
-        {/* Save and Reset Buttons */}
+        {/* Buttons */}
         <div className="flex justify-between mt-4">
           <button
             onClick={handleSave}
@@ -106,7 +121,7 @@ export const InputForm: React.FC = () => {
             }`}
             disabled={dbLoading}
           >
-            {dbLoading ? 'Saving...' : 'Save'}
+            {'Save'}
           </button>
           <button
             onClick={handleReset}
@@ -115,7 +130,16 @@ export const InputForm: React.FC = () => {
             }`}
             disabled={dbLoading}
           >
-            {dbLoading ? 'Resetting...' : 'Reset'}
+            {'Reset'}
+          </button>
+          <button
+            onClick={handleLoad}
+            className={`py-2 px-4 text-white rounded-md ${
+              dbLoading ? 'bg-gray-500 cursor-not-allowed' : 'bg-yellow-500 hover:bg-yellow-600'
+            }`}
+            disabled={dbLoading}
+          >
+            {'Load'}
           </button>
         </div>
       </div>

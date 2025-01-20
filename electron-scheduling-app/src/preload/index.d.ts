@@ -10,6 +10,7 @@ declare global {
       sendText(inputText: string, oldJSON: string | null): unknown
       saveDB(oldJSON: string | null): unknown
       resetDB(): unknown
+      fetchDB(): unknown
     }
   }
 }

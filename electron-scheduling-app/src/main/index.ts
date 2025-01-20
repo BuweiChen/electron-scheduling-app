@@ -19,6 +19,21 @@ const client = new MongoClient(uri, {
   }
 })
 
+async function fetchLastJsonFromDb(): Promise<string | null> {
+  try {
+    await client.connect()
+    const database = client.db('db1')
+    const collection = database.collection('collection1')
+    const result = await collection.findOne({})
+    return result ? JSON.stringify(result) : null
+  } catch (error) {
+    console.error('Error fetching JSON from DB:', error)
+    return null
+  } finally {
+    await client.close()
+  }
+}
+
 async function storeJsonToDb(json: object): Promise<void> {
   try {
     await client.connect()
@@ -147,6 +162,12 @@ app.whenReady().then(() => {
   ipcMain.handle('reset-db', async () => {
     // Here you will reset the MongoDB collection
     await resetCollection()
+  })
+
+  ipcMain.handle('fetch-db', async () => {
+    // Here you will fetch the JSON from your MongoDB database
+    const lastJson = await fetchLastJsonFromDb()
+    return lastJson
   })
 
   app.on('activate', function () {

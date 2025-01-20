@@ -13,7 +13,8 @@ try {
     sendText: (input: string, oldJSON: string | null) =>
       ipcRenderer.invoke('process-text', input, oldJSON),
     saveDB: (json: string) => ipcRenderer.invoke('save-db', json),
-    resetDB: () => ipcRenderer.invoke('reset-db')
+    resetDB: () => ipcRenderer.invoke('reset-db'),
+    fetchDB: () => ipcRenderer.invoke('fetch-db')
   })
 } catch (error) {
   console.log(error)
