@@ -17,8 +17,6 @@ async function fetchLLMResponse(input: string, apiUrl: string, oldJSON: string |
   const systemPrompt = `
     You are an AI that generates SAT-style constraints in a JSON format based on the user's natural language description.
     If an existing json is provided, modify it based on the user's input.
-    Old JSON:
-    ${oldJSON || 'None'}
     Use the following schema as a guide for your JSON responses:
     ${schemaContent}
     Strictly following the schema. Infer unfilled fields. Output must be valid JSON. Output only the JSON and nothing else.
@@ -31,7 +29,13 @@ async function fetchLLMResponse(input: string, apiUrl: string, oldJSON: string |
         role: 'system',
         content: systemPrompt
       },
-      { role: 'user', content: input }
+      {
+        role: 'user',
+        content: `
+        Old JSON:
+        ${oldJSON || 'None'}
+        ${input}`
+      }
     ],
     temperature: 0.7,
     max_tokens: -1,

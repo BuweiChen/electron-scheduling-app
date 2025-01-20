@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
+import { json } from 'stream/consumers'
 
 export const InputForm: React.FC = () => {
   const [inputText, setInputText] = useState('')
   const [jsonOutput, setJsonOutput] = useState<string | null>(null) // Keep JSON as a string for editing
   const [loading, setLoading] = useState(false)
+  const [dbLoading, setDbLoading] = useState(false) // For save/reset button loading states
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value)
@@ -13,6 +15,7 @@ export const InputForm: React.FC = () => {
     e.preventDefault()
     setLoading(true)
     try {
+      console.log(jsonOutput)
       const response = await window.electronAPI.sendText(inputText, jsonOutput)
       setJsonOutput(JSON.stringify(response, null, 2)) // Store formatted JSON string
     } catch (error) {
@@ -24,6 +27,37 @@ export const InputForm: React.FC = () => {
 
   const handleJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setJsonOutput(e.target.value)
+  }
+
+  const handleSave = async () => {
+    if (!jsonOutput) {
+      alert('No JSON data to save!')
+      return
+    }
+    setDbLoading(true)
+    try {
+      await window.electronAPI.resetDB()
+      await window.electronAPI.saveDB(jsonOutput)
+      alert('JSON saved to MongoDB!')
+    } catch (error) {
+      console.error('Error saving to MongoDB:', error)
+    } finally {
+      setDbLoading(false)
+    }
+  }
+
+  const handleReset = async () => {
+    if (!confirm('Are you sure you want to reset the MongoDB collection?')) return
+    setDbLoading(true)
+    try {
+      await window.electronAPI.resetDB()
+      alert('MongoDB collection reset successfully!')
+    } catch (error) {
+      console.error('Error resetting MongoDB:', error)
+    } finally {
+      setJsonOutput(null)
+      setDbLoading(false)
+    }
   }
 
   return (
@@ -59,9 +93,31 @@ export const InputForm: React.FC = () => {
           value={jsonOutput || ''}
           onChange={handleJsonChange}
           className="text-slate-600 w-full p-4 border border-gray-300 rounded-md resize-none mb-4"
-          rows={16} // Adjust for desired height
+          rows={16}
           placeholder="JSON output will appear here..."
         ></textarea>
+
+        {/* Save and Reset Buttons */}
+        <div className="flex justify-between mt-4">
+          <button
+            onClick={handleSave}
+            className={`py-2 px-4 text-white rounded-md ${
+              dbLoading ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
+            }`}
+            disabled={dbLoading}
+          >
+            {dbLoading ? 'Saving...' : 'Save'}
+          </button>
+          <button
+            onClick={handleReset}
+            className={`py-2 px-4 text-white rounded-md ${
+              dbLoading ? 'bg-gray-500 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'
+            }`}
+            disabled={dbLoading}
+          >
+            {dbLoading ? 'Resetting...' : 'Reset'}
+          </button>
+        </div>
       </div>
     </div>
   )

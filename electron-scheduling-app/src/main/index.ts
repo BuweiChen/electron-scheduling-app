@@ -21,6 +21,7 @@ const client = new MongoClient(uri, {
 
 async function storeJsonToDb(json: object): Promise<void> {
   try {
+    await client.connect()
     // Reference the database and collection
     const database = client.db('db1')
     const collection = database.collection('collection1') // Replace 'myCollection' with your collection name
@@ -39,6 +40,7 @@ async function storeJsonToDb(json: object): Promise<void> {
 
 async function resetCollection(): Promise<void> {
   try {
+    await client.connect()
     // Reference the database and collection
     const database = client.db('db1')
     const collection = database.collection('collection1')
@@ -134,6 +136,17 @@ app.whenReady().then(() => {
     // Example: Send the input to your LLM endpoint and return the JSON response
     const jsonResponse = await fetchLLMResponse(input, LLM_API_URL, oldJSON) // Stub function
     return jsonResponse
+  })
+
+  ipcMain.handle('save-db', async (event, json: string) => {
+    // Here you will save the JSON to your MongoDB database
+    const jsonObject = JSON.parse(json)
+    await storeJsonToDb(jsonObject)
+  })
+
+  ipcMain.handle('reset-db', async () => {
+    // Here you will reset the MongoDB collection
+    await resetCollection()
   })
 
   app.on('activate', function () {

@@ -10,7 +10,10 @@ try {
     locale: navigator.language
   })
   contextBridge.exposeInMainWorld('electronAPI', {
-    sendText: (input: string) => ipcRenderer.invoke('process-text', input)
+    sendText: (input: string, oldJSON: string | null) =>
+      ipcRenderer.invoke('process-text', input, oldJSON),
+    saveDB: (json: string) => ipcRenderer.invoke('save-db', json),
+    resetDB: () => ipcRenderer.invoke('reset-db')
   })
 } catch (error) {
   console.log(error)
